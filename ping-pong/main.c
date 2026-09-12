@@ -6,12 +6,12 @@
  * Usage: ./pingpong [num_exchanges]
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/wait.h>
 #include <time.h>
-#include <errno.h>
+#include <unistd.h>
 
 static void die(const char *msg) {
     perror(msg);
@@ -24,7 +24,8 @@ static int read_byte(int fd, char *buf) {
     do {
         n = read(fd, buf, 1);
     } while (n < 0 && errno == EINTR);
-    if (n < 0) die("read");
+    if (n < 0)
+        die("read");
     return n == 1;
 }
 
@@ -33,7 +34,8 @@ static void write_byte(int fd, char b) {
     do {
         n = write(fd, &b, 1);
     } while (n < 0 && errno == EINTR);
-    if (n != 1) die("write");
+    if (n != 1)
+        die("write");
 }
 
 static double now_seconds(void) {
@@ -54,11 +56,14 @@ int main(int argc, char *argv[]) {
 
     int p2c[2]; /* parent -> child */
     int c2p[2]; /* child -> parent */
-    if (pipe(p2c) < 0) die("pipe p2c");
-    if (pipe(c2p) < 0) die("pipe c2p");
+    if (pipe(p2c) < 0)
+        die("pipe p2c");
+    if (pipe(c2p) < 0)
+        die("pipe c2p");
 
     pid_t pid = fork();
-    if (pid < 0) die("fork");
+    if (pid < 0)
+        die("fork");
 
     if (pid == 0) {
         /* child: reads from p2c, writes to c2p */
