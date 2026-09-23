@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < 4; i++) {
         if (pthread_join(thds[i], NULL) != 0) {
-            perror("thread");
+            fprintf(stderr, "thread %d failed at thread_join\n", i);
         }
     }
     printf("counter is %lld\n", *(args.counter));
