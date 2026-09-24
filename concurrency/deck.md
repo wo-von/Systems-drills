@@ -1,7 +1,7 @@
 # Concurrency deck
 
-One card per rung. Front: the interview question. Back: the sentence, plus
-what I saw when I built it. Re-read before the Friday cold re-build.
+One card per rung. Front: the interview question. Back: my answer in my own
+words, written before Claude gives its sentence, plus what I saw when I built it.
 
 ---
 
@@ -29,15 +29,37 @@ behaviour, not "a wrong number". A race is a bug; contention is a cost.
   Join only waits, and gives a happens-before edge plus a lifetime guarantee.
 - Start breaking at around 100000, before that, the race cannot be seen, since the operation is fast (nano sec)
   and the pthread_creat needs microsecs.
+
 ---
 
 ## 1 · Mutex
 
 **Q: What does a mutex actually do when it's taken?**
 
-**A:** _(fill in after building)_
+**A:** _(your words first)_
 
 **What I saw:**
+strace -f -c ./01-mutex/mutex 8 100000 2>&1 | grep -E "futex|calls"
+== 1
+counter is 100000
+
+real	0m0.054s
+user	0m0.027s
+sys	0m0.027s
+== 4
+counter is 400000
+
+real	0m0.065s
+user	0m0.161s
+sys	0m0.085s
+== 8
+counter is 800000
+
+real	0m0.161s
+user	0m0.469s
+sys	0m0.565s
+% time     seconds  usecs/call     calls    errors syscall
+100.00   13.987126          17    800055        51 futex
 
 ---
 
@@ -45,146 +67,176 @@ behaviour, not "a wrong number". A race is a bug; contention is a cost.
 
 **Q: How is a lock done in the CPU?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 3 · Spinlock from CAS
+## 3 · Hand-off
+
+**Q: What does an acquire load promise, and what does it not do?**
+
+**A:** _(your words first)_
+
+**What I saw:**
+
+---
+
+## 4 · Read-modify-write by hand
 
 **Q: What is compare-and-swap? Why weak vs strong?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 4 · Ticket lock
+## 5 · Spinlock
 
-**Q: Why are spinlocks dangerous inside a guest?**
+**Q: How do you build a lock from atomics, and what do the waiters cost?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 5 · Bounded queue, mutex + condvar
+## 6 · Fair spinlock
+
+**Q: When does spinning pay off, and why are spinlocks dangerous inside a guest?**
+
+**A:** _(your words first)_
+
+**What I saw:**
+
+---
+
+## 7 · Bounded queue, mutex + condvar
 
 **Q: Write a producer-consumer queue.**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 6 · Semaphore
+## 8 · Semaphore
 
 **Q: Mutex vs semaphore?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 7 · The SAP logger
+## 9 · Reader-writer lock
+
+**Q: When would you not use an rwlock, and what would you use instead?**
+
+**A:** _(your words first)_
+
+**What I saw:**
+
+---
+
+## 10 · The SAP logger
 
 **Q: Many CPUs append to one log and the copy is slow. How?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 8 · SPSC ring buffer
+## 11 · SPSC ring buffer
 
 **Q: Lock-free single-producer single-consumer queue?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 9 · Seqlock
+## 12 · Read-mostly value
 
 **Q: How does the kernel publish the time without a lock?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 10 · Reference counting
+## 13 · Reference counting
 
-**Q: Why release on decrement and acquire before free, not seq_cst?**
+**Q: What orderings does a refcount need, and why not seq_cst?**
 
-**A:**
-
-**What I saw:**
-
----
-
-## 11 · Reader-writer lock
-
-**Q: When would you not use an rwlock?**
-
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 12 · Treiber stack and ABA
+## 14 · Lock-free stack
 
 **Q: What is ABA?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 13 · MPSC queue
-
-**Q: What does a real multi-producer log end up being?**
-
-**A:**
-
-**What I saw:**
-
----
-
-## 14 · Memory-model litmus tests
+## 15 · Memory-model litmus tests
 
 **Q: ARM vs x86 memory model, what is the difference?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 15 · Deadlock lab
+## 16 · Deadlock lab
 
 **Q: How do you avoid deadlock in a large codebase?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
 
 ---
 
-## 16 · The kernel's view
+## 17 · A lock and an interruption
+
+**Q: When must a spinlock holder also disable interrupts?**
+
+**A:** _(your words first)_
+
+**What I saw:**
+
+---
+
+## 18 · The kernel's rules
+
+**Q: Why may a spinlock holder not sleep?**
+
+**A:** _(your words first)_
+
+**What I saw:**
+
+---
+
+## 19 · Kernel module
 
 **Q: Which locking primitive in which kernel context, and why?**
 
-**A:**
+**A:** _(your words first)_
 
 **What I saw:**
