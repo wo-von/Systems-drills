@@ -1,7 +1,7 @@
 # Concurrency ladder
 
-Next: rung 1, part 2. Write your own `my_lock`/`my_unlock` on an `int`, using `atomic_exchange`
-and the futex syscall (ask Claude for the two futex wrappers), and swap it in for `pthread_mutex`.
+Next: rung 2 (atomic counter): replace the lock with a C11 atomic increment, then `objdump -d`.
+Cold rebuild of rung 0 is due from 2026-09-30, and of rung 1 from 2026-10-01.
 
 Target: interviews for systems, hypervisor and kernel teams (SAP, Amazon). Session: 90 min.
 Quiz (2026-09-24):
@@ -23,12 +23,12 @@ Shape: facets, each block ending in a rung that combines them (7 logger, 15 kern
   *Try:* predict the total, then run at `-O2`, under TSan, and with `volatile`.
   *Answers:* what is a data race?
   done: 2026-09-23 · cold: —
-- [ ] **1 · Mutex.** Fix the race with `pthread_mutex` (done). Then build your own mutex: an
+- [x] **1 · Mutex.** Fix the race with `pthread_mutex` (done). Then build your own mutex: an
   `int` in your memory, `atomic_exchange`, and the futex syscall. Swap it in for `pthread_mutex`.
   *New:* a blocking lock, futex.
   *Try:* time and `strace -f -c` your mutex against pthread's at 1, 4 and 8 threads.
   *Answers:* what does a mutex actually do when it's taken?
-  done: — · cold: —
+  done: 2026-09-24 · cold: —
 - [ ] **2 · Atomic counter, and what the CPU does.** Quick rung: the C part is solid. Replace
   the mutex with a C11 atomic increment. *New:* `objdump -d`, and cross-compiling for aarch64
   twice: plain, and with `-march=armv8.1-a`.

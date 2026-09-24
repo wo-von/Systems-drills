@@ -36,30 +36,35 @@ behaviour, not "a wrong number". A race is a bug; contention is a cost.
 
 **Q: What does a mutex actually do when it's taken?**
 
-**A:** _(your words first)_
+**A:** The lock is an int in my own memory. Taking it is one atomic exchange in user
+space: if the old value was "free", I have it, and the kernel is never involved. If it
+was taken, I mark the word "maybe waiters" and put myself to sleep with futex wait on
+that address. The unlocker releases with one exchange and calls futex wake only if the
+old value said someone may be waiting. So the kernel only does sleep and wake, never the
+locking itself.
 
 **What I saw:**
-strace -f -c ./01-mutex/mutex 8 100000 2>&1 | grep -E "futex|calls"
-== 1
-counter is 100000
+- My prediction was about 1 µs per lock (a syscall every time). pthread did 1 thread ×
+  100 000 in 0.003 s with `sys` 0.000, so the uncontended path never enters the kernel.
+- `strace -f -c`, 8 threads × 100 000 with pthread: only about 6 800 futex calls for
+  800 000 lock/unlock pairs. futex isn't a lock; it's "sleep on / wake up an address".
+- v0 (0/1 word, unlock always wakes everyone): 800 055 futex calls, and even 1 thread
+  was about 18× slower than pthread (0.054 s against 0.003 s).
+- Bugs on the way:
+  - WAIT_PRIVATE with a plain WAKE hung: private and shared futexes are keyed
+    differently, so the wake found no sleepers.
+  - Load-then-store in unlock loses a wakeup.
+  - A second store of 0 after the wake released someone else's lock, and the assert failed.
+- v1 (3 states: 0 free, 1 locked, 2 maybe waiters): 1 futex call at 1 thread (join's),
+  4 284 at 8 threads.
+- 1 000 000 per thread, real time: pthread 0.018 / 0.253 / 0.706 s, mine 0.011 / 0.153 /
+  0.454 s at 1 / 4 / 8 threads. Single runs. Mine skips glibc's mutex-type checks and
+  lets newcomers barge.
 
-real	0m0.054s
-user	0m0.027s
-sys	0m0.027s
-== 4
-counter is 400000
-
-real	0m0.065s
-user	0m0.161s
-sys	0m0.085s
-== 8
-counter is 800000
-
-real	0m0.161s
-user	0m0.469s
-sys	0m0.565s
-% time     seconds  usecs/call     calls    errors syscall
-100.00   13.987126          17    800055        51 futex
+**Later:**
+- Why does `user` time grow about 70× from 1 thread to 8 when waiting threads are
+  asleep? (rungs 2 and 5)
+- Barging makes it unfair. (rung 6)
 
 ---
 
