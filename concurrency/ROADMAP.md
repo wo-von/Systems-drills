@@ -1,7 +1,8 @@
 # Concurrency ladder
 
-Next: rung 3 (hand-off): new `03-handoff/`, a writer fills a struct then sets a flag, a reader
-waits for the flag then reads the struct. Cold rebuilds due: rung 0 from 2026-09-30, rung 1 from 10-01, rung 2 from 10-02.
+Next: rung 4 (read-modify-write by hand): new `04-cas/`, your own atomic add and atomic max
+using only `atomic_compare_exchange_weak`, with a retry counter. Cold rebuilds due: rung 0 from
+2026-09-30, rung 1 from 10-01, rung 2 from 10-02, rung 3 from 10-02.
 
 Target: interviews for systems, hypervisor and kernel teams (SAP, Amazon). Session: 90 min.
 Quiz (2026-09-24):
@@ -36,12 +37,12 @@ Shape: facets, each block ending in a rung that combines them (7 logger, 15 kern
   both ARM builds. Time it against rung 1.
   *Answers:* how is a lock done in the CPU? (the SAP question, exactly)
   done: 2026-09-25 · cold: —
-- [ ] **3 · Hand-off.** One thread fills a struct, then sets a flag. Another thread waits for
+- [x] **3 · Hand-off.** One thread fills a struct, then sets a flag. Another thread waits for
   the flag, then reads the struct. No lock. *New:* release and acquire.
   *Try:* make the flag relaxed; predict what TSan says, then run it. Then have the
   reader check the flag once instead of waiting for it, and predict what it can see.
   *Answers:* what does an acquire load promise, and what does it not do?
-  done: — · cold: —
+  done: 2026-09-25 · cold: —
 - [ ] **4 · Read-modify-write by hand.** Write your own atomic add and atomic max, using only
   `atomic_compare_exchange_weak`. Count the retries. *New:* compare-and-swap.
   *Try:* predict the retry count with 1, 4 and 8 threads, then measure. Swap weak
