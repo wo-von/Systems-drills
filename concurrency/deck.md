@@ -72,9 +72,24 @@ locking itself.
 
 **Q: How is a lock done in the CPU?**
 
-**A:** _(your words first)_
+**A:** Depends on the CPU. x86 has one instruction (`lock` prefix) that takes ownership of the
+cache line until the read-modify-write is done. Old ARM tries (load-exclusive/store-exclusive),
+checks if another core touched the line in between, and retries. ARM 8.1 has one instruction too.
 
 **What I saw:**
+- Atomic ops are single CPU instructions. The mutex was software plus the kernel putting threads to sleep.
+- x86: `lock addq $0x1,(%rdx)`, for both the default (seq_cst) and relaxed.
+- ARM plain: `bl __aarch64_ldadd8_acq_rel`, a libgcc helper: `ldaddal` if the CPU has it, else an
+  `ldaxr`/`add`/`stlxr`/`cbnz` retry loop.
+- ARM 8.1: `ldaddal` (default) vs `ldadd` (relaxed). On x86 relaxed and seq_cst are the same
+  instruction; on ARM relaxed drops the ordering, so instructions around it can move.
+- I first picked the loop counter `i++` as the increment: follow the registers to `arg->cnt`.
+- 8 threads × 1M: atomic real 0.214 s, user 1.562, sys 0.004. My mutex: real 0.428, user 1.340, sys 1.566.
+  Faster because no sleep/wake syscalls and one instruction per increment instead of three.
+  But user is *higher*: all 8 cores run, stalled on the same cache line, instead of sleeping.
+  Neither version goes to RAM: the line moves between the cores' caches.
+
+**Later:** why does the stall cost so much per increment? (rung 5, rung 11 false sharing)
 
 ---
 

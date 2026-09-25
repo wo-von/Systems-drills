@@ -1,7 +1,7 @@
 # Concurrency ladder
 
-Next: rung 2 (atomic counter): replace the lock with a C11 atomic increment, then `objdump -d`.
-Cold rebuild of rung 0 is due from 2026-09-30, and of rung 1 from 2026-10-01.
+Next: rung 3 (hand-off): new `03-handoff/`, a writer fills a struct then sets a flag, a reader
+waits for the flag then reads the struct. Cold rebuilds due: rung 0 from 2026-09-30, rung 1 from 10-01, rung 2 from 10-02.
 
 Target: interviews for systems, hypervisor and kernel teams (SAP, Amazon). Session: 90 min.
 Quiz (2026-09-24):
@@ -29,13 +29,13 @@ Shape: facets, each block ending in a rung that combines them (7 logger, 15 kern
   *Try:* time and `strace -f -c` your mutex against pthread's at 1, 4 and 8 threads.
   *Answers:* what does a mutex actually do when it's taken?
   done: 2026-09-24 · cold: —
-- [ ] **2 · Atomic counter, and what the CPU does.** Quick rung: the C part is solid. Replace
+- [x] **2 · Atomic counter, and what the CPU does.** Quick rung: the C part is solid. Replace
   the mutex with a C11 atomic increment. *New:* `objdump -d`, and cross-compiling for aarch64
   twice: plain, and with `-march=armv8.1-a`.
   *Try:* before disassembling, predict what the increment becomes on x86 and on
   both ARM builds. Time it against rung 1.
   *Answers:* how is a lock done in the CPU? (the SAP question, exactly)
-  done: — · cold: —
+  done: 2026-09-25 · cold: —
 - [ ] **3 · Hand-off.** One thread fills a struct, then sets a flag. Another thread waits for
   the flag, then reads the struct. No lock. *New:* release and acquire.
   *Try:* make the flag relaxed; predict what TSan says, then run it. Then have the
