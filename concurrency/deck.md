@@ -102,17 +102,19 @@ too). Acquire adds ordering: my later reads stay after the load. Release is the 
 writer's earlier writes stay before the store. They only work as a pair: *if* my acquire load
 reads the value the release stored, I see everything the writer did before it. If it reads the
 old value (0), there is no promise. Acquire does not wait and does not fetch a "fresher" value:
-it returns what is there now. The waiting is my loop.
+it returns what is there now. Waiting is my job: spin (or sleep) until it reads 1, or check once
+and skip if it's 0. Both are safe; only waiting guarantees the read happens.
 
 **What I saw:**
-- Starting the writer first doesn't mean it runs first; the reader can be ahead. So either spin
-  until the flag is set, or check once and act on what I see (the try version).
+- Starting the writer first doesn't mean it runs first: the reader is ahead ~5-10% of the time.
 - Relaxed flag: 1000 plain runs passed, but TSan reported a race on every struct field. Works on
   x86 by luck (stores stay in order, loads stay in order); UB in C11, can break on ARM.
 - Acquire load with no loop, result ignored: `id == 12` failed in ~9% of plain runs.
 - TSan was silent on that version: it only checks the run that happened. Under TSan the writer
   always finished first, and when the reader went first the assert aborted before the write.
-- Try version (read only if the flag is 1): ~10% `not ready`, TSan clean.
+- `./handoff spin|try`: spin 1000/1000 ready; try ~5-10% `not ready`; both TSan clean.
+  Safety (never read unpublished data) vs liveness (the read eventually happens): try is like
+  trylock, safe without progress; spin gives both, at the cost of a busy core.
 
 **Later:** what exactly can the CPU or compiler reorder without release/acquire? (rung 15 litmus)
 
