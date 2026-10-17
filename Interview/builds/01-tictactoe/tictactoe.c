@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,7 +59,7 @@ void print_board(struct Board *board) {
     return;
 }
 // returns 1 if the move was possible, 0 otherwise
-int make_move(struct Move *move, struct Board *board, struct Player *curr_player) {
+int make_move(struct Move *move, struct Board *board, const char symbol) {
     int x = move->x, y = move->y;
     if (x < 0 || x >= BRD_SIZE || y < 0 || y >= BRD_SIZE) {
         printf("move out of bounds\n");
@@ -66,7 +67,7 @@ int make_move(struct Move *move, struct Board *board, struct Player *curr_player
     }
 
     if (board->state[x][y] == '-') {
-        board->state[x][y] = curr_player->symbol;
+        board->state[x][y] = symbol;
         (board->counter)--;
         return 1;
     } else {
@@ -135,7 +136,80 @@ enum Result check_gamestate(struct Board *board, struct Player *curr_player, str
     return UNFINISHED;
 }
 
+void test_tictactoe(void) {
+    struct Board board;
+    struct Player player;
+    strcpy(player.name, "player1");
+    player.symbol = 'X';
+    struct Move move;
+
+    enum Result res;
+    // test row
+    set_board(&board);
+    move.x = 0, move.y = 0;
+    make_move(&move, &board, player.symbol);
+    move.x = 0, move.y = 1;
+    make_move(&move, &board, player.symbol);
+    move.x = 0, move.y = 2;
+    make_move(&move, &board, player.symbol);
+    res = check_gamestate(&board, &player, &move);
+    assert(res == WIN);
+    // test col
+    set_board(&board);
+    move.x = 0, move.y = 0;
+    make_move(&move, &board, player.symbol);
+    move.x = 1, move.y = 0;
+    make_move(&move, &board, player.symbol);
+    move.x = 2, move.y = 0;
+    make_move(&move, &board, player.symbol);
+    res = check_gamestate(&board, &player, &move);
+    assert(res == WIN);
+    // test diag
+    set_board(&board);
+    move.x = 0, move.y = 0;
+    make_move(&move, &board, player.symbol);
+    move.x = 1, move.y = 1;
+    make_move(&move, &board, player.symbol);
+    move.x = 2, move.y = 2;
+    make_move(&move, &board, player.symbol);
+    res = check_gamestate(&board, &player, &move);
+    assert(res == WIN);
+    // test antidiag
+    set_board(&board);
+    move.x = 0, move.y = 2;
+    make_move(&move, &board, player.symbol);
+    move.x = 1, move.y = 1;
+    make_move(&move, &board, player.symbol);
+    move.x = 2, move.y = 0;
+    make_move(&move, &board, player.symbol);
+    res = check_gamestate(&board, &player, &move);
+    assert(res == WIN);
+    // test draw
+    set_board(&board);
+    move.x = 0, move.y = 1;
+    make_move(&move, &board, 'O');
+    move.x = 0, move.y = 2;
+    make_move(&move, &board, 'X');
+    move.x = 1, move.y = 0;
+    make_move(&move, &board, 'O');
+    move.x = 1, move.y = 1;
+    make_move(&move, &board, 'X');
+    move.x = 1, move.y = 2;
+    make_move(&move, &board, 'O');
+    move.x = 2, move.y = 0;
+    make_move(&move, &board, 'O');
+    move.x = 2, move.y = 1;
+    make_move(&move, &board, 'X');
+    move.x = 2, move.y = 2;
+    make_move(&move, &board, 'O');
+    move.x = 0, move.y = 0;
+    make_move(&move, &board, 'X');
+    res = check_gamestate(&board, &player, &move);
+    assert(res == DRAW);
+}
+
 int main(void) {
+    test_tictactoe();
     unsigned int num_player = 2;
     struct Board board;
     set_board(&board);
@@ -165,7 +239,7 @@ int main(void) {
             }
         }
         int res = 0;
-        if (make_move(&move, &board, curr_player)) {
+        if (make_move(&move, &board, curr_player->symbol)) {
             res = check_gamestate(&board, curr_player, &move);
         } else {
             continue;
