@@ -76,12 +76,13 @@ int make_move(struct Move *move, struct Board *board, const char symbol) {
     }
 }
 
-enum Result check_gamestate(struct Board *board, struct Player *curr_player, struct Move *move) {
+enum Result check_gamestate(struct Board *board, struct Move *move) {
     int x = move->x, y = move->y;
+    char symbol = board->state[x][y];
     int counter = BRD_SIZE; // couting down
     // check row
     for (int i = 0; i < BRD_SIZE; i++) {
-        if (board->state[x][i] == curr_player->symbol) {
+        if (board->state[x][i] == symbol) {
             counter--;
         } else {
             break;
@@ -93,7 +94,7 @@ enum Result check_gamestate(struct Board *board, struct Player *curr_player, str
     counter = BRD_SIZE;
     // check col
     for (int i = 0; i < BRD_SIZE; i++) {
-        if (board->state[i][y] == curr_player->symbol) {
+        if (board->state[i][y] == symbol) {
             counter--;
         } else {
             break;
@@ -106,7 +107,7 @@ enum Result check_gamestate(struct Board *board, struct Player *curr_player, str
     // check diag, if on diag
     if (x == y) {
         for (int i = 0; i < BRD_SIZE; i++) {
-            if (board->state[i][i] == curr_player->symbol) {
+            if (board->state[i][i] == symbol) {
                 counter--;
             } else {
                 break;
@@ -120,7 +121,7 @@ enum Result check_gamestate(struct Board *board, struct Player *curr_player, str
     // check anti diagonal, if on it
     if (x == BRD_SIZE - 1 - y) {
         for (int i = 0; i < BRD_SIZE; i++) {
-            if (board->state[i][BRD_SIZE - 1 - i] == curr_player->symbol) {
+            if (board->state[i][BRD_SIZE - 1 - i] == symbol) {
                 counter--;
             } else {
                 break;
@@ -144,68 +145,122 @@ void test_tictactoe(void) {
     struct Move move;
 
     enum Result res;
+    int move_res;
+
     // test row
     set_board(&board);
     move.x = 0, move.y = 0;
-    make_move(&move, &board, player.symbol);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
     move.x = 0, move.y = 1;
-    make_move(&move, &board, player.symbol);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
     move.x = 0, move.y = 2;
-    make_move(&move, &board, player.symbol);
-    res = check_gamestate(&board, &player, &move);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
+    res = check_gamestate(&board, &move);
     assert(res == WIN);
+
     // test col
     set_board(&board);
     move.x = 0, move.y = 0;
-    make_move(&move, &board, player.symbol);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
     move.x = 1, move.y = 0;
-    make_move(&move, &board, player.symbol);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
     move.x = 2, move.y = 0;
-    make_move(&move, &board, player.symbol);
-    res = check_gamestate(&board, &player, &move);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
+    res = check_gamestate(&board, &move);
     assert(res == WIN);
+
     // test diag
     set_board(&board);
     move.x = 0, move.y = 0;
-    make_move(&move, &board, player.symbol);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
     move.x = 1, move.y = 1;
-    make_move(&move, &board, player.symbol);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
     move.x = 2, move.y = 2;
-    make_move(&move, &board, player.symbol);
-    res = check_gamestate(&board, &player, &move);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
+    res = check_gamestate(&board, &move);
     assert(res == WIN);
+
     // test antidiag
     set_board(&board);
     move.x = 0, move.y = 2;
-    make_move(&move, &board, player.symbol);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
     move.x = 1, move.y = 1;
-    make_move(&move, &board, player.symbol);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
     move.x = 2, move.y = 0;
-    make_move(&move, &board, player.symbol);
-    res = check_gamestate(&board, &player, &move);
+    move_res = make_move(&move, &board, player.symbol);
+    assert(move_res == 1);
+    res = check_gamestate(&board, &move);
     assert(res == WIN);
+
     // test draw
     set_board(&board);
     move.x = 0, move.y = 1;
-    make_move(&move, &board, 'O');
+    move_res = make_move(&move, &board, 'O');
+    assert(move_res == 1);
     move.x = 0, move.y = 2;
-    make_move(&move, &board, 'X');
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
     move.x = 1, move.y = 0;
-    make_move(&move, &board, 'O');
+    move_res = make_move(&move, &board, 'O');
+    assert(move_res == 1);
     move.x = 1, move.y = 1;
-    make_move(&move, &board, 'X');
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
     move.x = 1, move.y = 2;
-    make_move(&move, &board, 'O');
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
     move.x = 2, move.y = 0;
-    make_move(&move, &board, 'O');
+    move_res = make_move(&move, &board, 'O');
+    assert(move_res == 1);
     move.x = 2, move.y = 1;
-    make_move(&move, &board, 'X');
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
     move.x = 2, move.y = 2;
-    make_move(&move, &board, 'O');
+    move_res = make_move(&move, &board, 'O');
+    assert(move_res == 1);
     move.x = 0, move.y = 0;
-    make_move(&move, &board, 'X');
-    res = check_gamestate(&board, &player, &move);
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
+    res = check_gamestate(&board, &move);
     assert(res == DRAW);
+
+    // test UNFINISHED
+    set_board(&board);
+    move.x = 0, move.y = 0;
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
+    move.x = 0, move.y = 2;
+    move_res = make_move(&move, &board, 'O');
+    assert(move_res == 1);
+    move.x = 1, move.y = 1;
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
+    res = check_gamestate(&board, &move);
+    assert(res == UNFINISHED);
+
+    set_board(&board);
+    move.x = 0, move.y = 1;
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
+    move.x = 0, move.y = 2;
+    move_res = make_move(&move, &board, 'O');
+    assert(move_res == 1);
+    move.x = 0, move.y = 0;
+    move_res = make_move(&move, &board, 'X');
+    assert(move_res == 1);
+    res = check_gamestate(&board, &move);
+    assert(res == UNFINISHED);
 }
 
 int main(void) {
@@ -240,7 +295,7 @@ int main(void) {
         }
         int res = 0;
         if (make_move(&move, &board, curr_player->symbol)) {
-            res = check_gamestate(&board, curr_player, &move);
+            res = check_gamestate(&board, &move);
         } else {
             continue;
         }
