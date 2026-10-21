@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define MAX_USR 2
-#define MAX_BRD 200 / 8 // larger than this is not playable in terminal, width / cell width
+#define MAX_BRD (200 / 8) // larger than this is not playable in terminal, width / cell width
 
 char symbols[MAX_USR] = {'X', 'O'};
 char *names[MAX_USR] = {"player1", "player2"};
@@ -13,6 +13,7 @@ char *names[MAX_USR] = {"player1", "player2"};
 // - free OR player Symbol
 struct Board {
     int n;            // board size
+    int k;            // win requirement
     long int counter; // how many free left
     char *cells;
 };
@@ -35,11 +36,13 @@ enum Result {
 
 // for reading
 static inline const char *board_cell_const(const struct Board *board, int row, int col) {
+    assert(row >= 0 && row < board->n && col >= 0 && col < board->n);
     return board->cells + board->n * row + col;
 }
 
 // for writing
 static inline char *board_cell(struct Board *board, int row, int col) {
+    assert(row >= 0 && row < board->n && col >= 0 && col < board->n);
     return board->cells + board->n * row + col;
 }
 
@@ -48,11 +51,17 @@ void del_board(struct Board *board) {
     board->cells = NULL;
     return;
 }
-// return 0 in case of a problem with malloc
-int set_board(struct Board *board) {
-
-    board->counter = board->n * board->n;
-    board->cells = (char *)malloc((size_t)board->counter * sizeof(char));
+// return 0 if n or k is out of range, or in case of a problem with malloc
+int set_board(struct Board *board, int n, int k) {
+    board->cells = NULL;
+    if (n < 3 || n > MAX_BRD || k < 3 || k > n) {
+        fprintf(stderr, "invalid board: n=%d k=%d\n", n, k);
+        return 0;
+    }
+    board->n = n;
+    board->k = k;
+    board->counter = n * n;
+    board->cells = malloc((size_t)board->counter);
     if (board->cells == NULL) {
         fprintf(stderr, "malloc failed\n");
         return 0;
@@ -99,66 +108,51 @@ int make_move(struct Move *move, struct Board *board, const char symbol) {
         return 0;
     }
 }
+// count the marks equal to the one at move, walking from the cell next to move in
+// direction (dr, dc) until a different mark or the edge; the move itself is not counted
+int count_dir(const struct Board *board, const struct Move *move, int dr, int dc) {
+    char symbol = *(board_cell_const(board, move->x, move->y));
+    int x = move->x + dr, y = move->y + dc;
+    int count = 0;
+    while (x >= 0 && x < board->n && y >= 0 && y < board->n &&
+           (*(board_cell_const(board, x, y)) == symbol)) {
+        count++;
+        x += dr;
+        y += dc;
+    }
+    return count;
+}
+
+// returns 1 if the move completes k or more in a row in any direction, 0 otherwise
+int is_win(const struct Board *board, const struct Move *move) {
+    // row, col, diag, anti diag; the opposite direction is the negation
+    const int dirs[4][2] = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
+    for (int d = 0; d < 4; d++) {
+        int dr = dirs[d][0], dc = dirs[d][1];
+        int run = 1 + count_dir(board, move, dr, dc) + count_dir(board, move, -dr, -dc);
+        if (run >= board->k) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 enum Result check_gamestate(const struct Board *board, const struct Move *move) {
-    int x = move->x, y = move->y;
-    char symbol = *(board_cell_const(board, x, y));
-    int counter = board->n; // couting down
-    // check row
-    for (int i = 0; i < board->n; i++) {
-        if (*(board_cell_const(board, x, i)) == symbol) {
-            counter--;
-        } else {
-            break;
-        }
-    }
-    if (counter == 0) {
-        return WIN;
-    }
-    counter = board->n;
-    // check col
-    for (int i = 0; i < board->n; i++) {
-        if (*(board_cell_const(board, i, y)) == symbol) {
-            counter--;
-        } else {
-            break;
-        }
-    }
-    if (counter == 0) {
-        return WIN;
-    }
-    counter = board->n;
-    // check diag, if on diag
-    if (x == y) {
-        for (int i = 0; i < board->n; i++) {
-            if (*(board_cell_const(board, i, i)) == symbol) {
-                counter--;
-            } else {
-                break;
-            }
-        }
-    }
-    if (counter == 0) {
-        return WIN;
-    }
-    counter = board->n;
-    // check anti diagonal, if on it
-    if (x == board->n - 1 - y) {
-        for (int i = 0; i < board->n; i++) {
-            if (*(board_cell_const(board, i, board->n - 1 - i)) == symbol) {
-                counter--;
-            } else {
-                break;
-            }
-        }
-    }
-    if (counter == 0) {
+    if (is_win(board, move)) {
         return WIN;
     }
     if (board->counter == 0) {
         return DRAW;
     }
     return UNFINISHED;
+}
+
+// test helper: place a mark, fail loudly if the square was not free, return the move
+static struct Move place(struct Board *board, int row, int col, char symbol) {
+    struct Move move = {row, col};
+    int ok = make_move(&move, board, symbol);
+    assert(ok == 1);
+    return move;
 }
 
 void test_tictactoe(void) {
@@ -170,10 +164,11 @@ void test_tictactoe(void) {
 
     enum Result res;
     int move_res;
+    int ok;
 
     // test row
-    board.n = 3;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 3, 3);
+    assert(ok == 1);
     move.x = 0, move.y = 0;
     move_res = make_move(&move, &board, player.symbol);
     assert(move_res == 1);
@@ -188,8 +183,8 @@ void test_tictactoe(void) {
     del_board(&board);
 
     // test col
-    board.n = 3;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 3, 3);
+    assert(ok == 1);
     move.x = 0, move.y = 0;
     move_res = make_move(&move, &board, player.symbol);
     assert(move_res == 1);
@@ -204,8 +199,8 @@ void test_tictactoe(void) {
     del_board(&board);
 
     // test diag
-    board.n = 3;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 3, 3);
+    assert(ok == 1);
     move.x = 0, move.y = 0;
     move_res = make_move(&move, &board, player.symbol);
     assert(move_res == 1);
@@ -220,8 +215,8 @@ void test_tictactoe(void) {
     del_board(&board);
 
     // test antidiag
-    board.n = 3;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 3, 3);
+    assert(ok == 1);
     move.x = 0, move.y = 2;
     move_res = make_move(&move, &board, player.symbol);
     assert(move_res == 1);
@@ -236,8 +231,8 @@ void test_tictactoe(void) {
     del_board(&board);
 
     // test draw
-    board.n = 3;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 3, 3);
+    assert(ok == 1);
     move.x = 0, move.y = 1;
     move_res = make_move(&move, &board, 'O');
     assert(move_res == 1);
@@ -270,8 +265,8 @@ void test_tictactoe(void) {
     del_board(&board);
 
     // test UNFINISHED
-    board.n = 3;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 3, 3);
+    assert(ok == 1);
     move.x = 0, move.y = 0;
     move_res = make_move(&move, &board, 'X');
     assert(move_res == 1);
@@ -285,8 +280,8 @@ void test_tictactoe(void) {
     assert(res == UNFINISHED);
     del_board(&board);
 
-    board.n = 3;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 3, 3);
+    assert(ok == 1);
     move.x = 0, move.y = 1;
     move_res = make_move(&move, &board, 'X');
     assert(move_res == 1);
@@ -301,8 +296,8 @@ void test_tictactoe(void) {
     del_board(&board);
 
     // test 4x4 near miss
-    board.n = 4;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 4, 4);
+    assert(ok == 1);
     move.x = 0, move.y = 0;
     move_res = make_move(&move, &board, 'X');
     assert(move_res == 1);
@@ -329,8 +324,8 @@ void test_tictactoe(void) {
     del_board(&board);
 
     // test 5x5 board
-    board.n = 5;
-    assert(set_board(&board) == 1);
+    ok = set_board(&board, 5, 5);
+    assert(ok == 1);
     move.x = 0, move.y = 0;
     move_res = make_move(&move, &board, 'X');
     assert(move_res == 1);
@@ -361,34 +356,95 @@ void test_tictactoe(void) {
     res = check_gamestate(&board, &move);
     assert(res == WIN);
     del_board(&board);
+
+    // k in a row: short diagonal off the main ones, 5x5, k = 3
+    ok = set_board(&board, 5, 3);
+    assert(ok == 1);
+    place(&board, 1, 0, 'X');
+    place(&board, 2, 1, 'X');
+    move = place(&board, 3, 2, 'X');
+    res = check_gamestate(&board, &move);
+    assert(res == WIN);
+    del_board(&board);
+
+    // two marks are not three: the move must be counted once
+    ok = set_board(&board, 5, 3);
+    assert(ok == 1);
+    place(&board, 0, 0, 'X');
+    move = place(&board, 0, 1, 'X');
+    res = check_gamestate(&board, &move);
+    assert(res == UNFINISHED);
+    del_board(&board);
+
+    // X X - X X is not 4 in a row
+    ok = set_board(&board, 5, 4);
+    assert(ok == 1);
+    place(&board, 2, 0, 'X');
+    place(&board, 2, 1, 'X');
+    place(&board, 2, 3, 'X');
+    move = place(&board, 2, 4, 'X');
+    res = check_gamestate(&board, &move);
+    assert(res == UNFINISHED);
+    // filling the gap makes 5, more than k, still a win
+    move = place(&board, 2, 2, 'X');
+    res = check_gamestate(&board, &move);
+    assert(res == WIN);
+    del_board(&board);
+
+    // the walk must stop at the edge, not wrap from (1, 0) to (0, 4)
+    ok = set_board(&board, 5, 3);
+    assert(ok == 1);
+    place(&board, 0, 4, 'X');
+    place(&board, 1, 1, 'X');
+    move = place(&board, 1, 0, 'X');
+    res = check_gamestate(&board, &move);
+    assert(res == UNFINISHED);
+    del_board(&board);
+
+    // a board that can't be won, or a k below 3, is never created
+    ok = set_board(&board, 3, 4);
+    assert(ok == 0);
+    ok = set_board(&board, 5, 2);
+    assert(ok == 0);
 }
-long parse_input(int argc, char *argv[]) {
-    long n;
+// parse s as a whole decimal number in [lo, hi]; returns 1 on success
+// the range check happens on the long, before narrowing to int
+int parse_int(const char *s, long lo, long hi, int *out) {
     char *endptr;
-    if (argc == 1) {
-        n = 3;
-        return n;
-    } else if (argc == 2) {
-        n = strtol(argv[1], &endptr, 10);
-        if (n <= 2 || (*endptr != '\0') || n > MAX_BRD) {
-            fprintf(stderr, "enter a valid board size\n");
-            return -1;
-        }
-        return n;
-    } else {
-        fprintf(stderr, "usage ttt [board size]\n");
+    long v = strtol(s, &endptr, 10);
+    if (endptr == s || *endptr != '\0' || v < lo || v > hi) {
+        return 0;
+    }
+    *out = (int)v;
+    return 1;
+}
+
+// ttt [boardsize [winsize]]: n defaults to 3, k defaults to n
+int parse_input(int argc, char *argv[], int *n, int *k) {
+    if (argc > 3) {
+        fprintf(stderr, "usage ttt [boardsize [winsize]]\n");
         return -1;
     }
+    *n = 3;
+    if (argc >= 2 && !parse_int(argv[1], 3, MAX_BRD, n)) {
+        fprintf(stderr, "enter a valid board size (3..%d)\n", MAX_BRD);
+        return -1;
+    }
+    *k = *n;
+    if (argc == 3 && !parse_int(argv[2], 3, *n, k)) {
+        fprintf(stderr, "enter a valid win requirement (3..%d)\n", *n);
+        return -1;
+    }
+    return 1;
 }
 int main(int argc, char *argv[]) {
     struct Board board;
-    long ret = parse_input(argc, argv);
-    if (ret == -1) {
+    int n, k;
+    if (parse_input(argc, argv, &n, &k) == -1) {
         return 1;
     }
-    board.n = (int)ret;
     test_tictactoe();
-    if (!set_board(&board)) {
+    if (!set_board(&board, n, k)) {
         return 1;
     }
     unsigned int num_player = 2;
