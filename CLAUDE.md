@@ -61,3 +61,16 @@ Formatting is via clang-format (config in `.clang-format`, LLVM-based style, 4-s
 Code hook (`.claude/settings.json`) already runs `clang-format -i` automatically on any `.c`/`.h` file
 after Write/Edit, and VS Code is configured to format C files on save — no need to invoke clang-format
 manually after edits made through the editing tools.
+## Amazon loop prep (until Mon 2 Nov 2026)
+
+- Timed problems live in `Interview/leetcode/<nn>-<name>.c`, one file and one commit
+  per problem ("lc 1 two-sum: solved in 32 min" or "lc 1 two-sum: bell, rewritten from
+  reference"). Cold re-solves are a new commit on the same file.
+- After each problem, append one line to `Interview/LOG.md`:
+  date | problem | minutes | compile errors | logic bugs | found by me | categories.
+- The plan lives in the Job hunt 2026 doc, tab Daily plan. Read it to find the next
+  item; tick items when done. Do NOT rewrite, reorder or reschedule the plan:
+  plan changes are made in the claude.ai Job hunt 2026 project, which also holds
+  the interview dates, applications and recruiter notes this repo doesn't have.
+- Interview mode stays: Claude is the interviewer, the user writes the code,
+  no code from Claude unless the user says "show me".
