@@ -1,2 +1,21 @@
+## C gotchas found in problems
+
+- Returning a local array (lc 1). `int res[2]; return res;` gives the caller a
+  dangling pointer: the array's lifetime ends at return (C11 6.2.4p2). Return memory
+  from `malloc`, and say in a comment that the caller frees it.
+- `-1` as a `size_t` is `SIZE_MAX` (lc 1, lc 20). Returning `-1` for "not found" from a
+  `size_t` function doesn't work, and `top - 1` with `top == 0` wraps the same way.
+- `malloc` memory is uninitialized (lc 1). Use `calloc` for flag arrays like `used[]`;
+  reading an uninitialized `bool` is UB (UBSan: "not a valid value for type 'bool'").
+- Freeing twice is UB (lc 1, C11 7.22.3.3). If cleanup can run twice (init failed, then
+  `free_map`), set pointers to NULL after `free`; `free(NULL)` does nothing.
+- Arrays can't be assigned, only initialized (lc 20). `stk.s = {0};` is an error: an
+  array isn't a modifiable lvalue (C11 6.3.2.1p1), and a `{...}` list is only valid as
+  an initializer in a declaration (6.7.9). Fix: `struct Stack stk = {0};` at the
+  declaration, or `memset`/`memcpy` later. A struct holding an array *can* be assigned.
+
+## Problems
+
 date | problem | minutes | compile errors | logic bugs | found by me | categories
 2026-10-22 | lc 1 two-sum | bell; rewrite ~150 | 6 | 13 | 0 | hash map (open addressing), arrays
+2026-10-22 | lc 20 valid-parentheses | 44 | 2 | 3 | 0 | stack, strings
