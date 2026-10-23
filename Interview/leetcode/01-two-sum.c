@@ -1,179 +1,135 @@
-#include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-int *twoSum(int *nums, int numsSize, int target, int *returnSize);
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+#include<string.h>
+#include<assert.h>
 
-struct Map {
+struct Map{
     int *keys;
     int *values;
-    bool *exists;
+    int cap;
+    bool *exist;
     size_t mask;
 };
 
-unsigned int hash_function(struct Map *mp, int key) {
-    unsigned int hash = (unsigned int)key;
+size_t hash_map(struct Map *mp, int index){
+    unsigned long hash = (unsigned long)index;
     hash *= 0x9E3779B1u;
     hash ^= hash >> 16;
-    return hash & mp->mask;
+    return (size_t)hash & mp->mask;
 }
-void free_map(struct Map *mp) {
+
+void free_map(struct Map *mp){
     free(mp->keys);
     mp->keys = NULL;
     free(mp->values);
     mp->values = NULL;
-    free(mp->exists);
-    mp->exists = NULL;
+    free(mp->exist);
+    mp->exist = NULL;
+    mp->cap = 0;
     mp->mask = 0;
-    return;
 }
 
-bool init_map(struct Map *mp, size_t capacity) {
-    size_t cap = 1;
-    while (cap < capacity) {
-        cap <<= 1;
+bool init_map(struct Map *mp, int cap){
+    int c = 1;
+    while (c < cap){
+        c <<= 1;
     }
-    mp->keys = malloc(cap * sizeof(*mp->keys));
-    mp->values = malloc(cap * sizeof(*mp->values));
-    mp->exists = calloc(cap, sizeof(*mp->exists));
-    if (!mp->keys || !mp->values || !mp->exists) {
+    mp->cap = c;
+    mp->mask = c - 1;
+    mp->keys = malloc(mp->cap * sizeof(int));
+    mp->values = malloc(mp->cap * sizeof(int));
+    mp->exist = calloc(mp->cap, sizeof(bool));
+    if(!mp->keys || !mp->values || !mp->exist){
         free_map(mp);
         return false;
     }
-    mp->mask = cap - 1;
     return true;
+
 }
 
-// returns the index of the key in the map, empty or not
-size_t probe_map(struct Map *mp, int key) {
-    size_t index = hash_function(mp, key);
-    while (mp->exists[index] && (mp->keys[index] != key)) {
+size_t probe_map(struct Map *mp, int key){
+    size_t index = hash_map(mp, key);
+    while (mp->exist[index] && mp->keys[index] != key){
         index = (index + 1) & mp->mask;
     }
     return index;
 }
 
-void set_map(struct Map *mp, int key, int value) {
+void set_map(struct Map *mp, int key, int value){
     size_t index = probe_map(mp, key);
     mp->keys[index] = key;
     mp->values[index] = value;
-    mp->exists[index] = true;
-    return;
+    mp->exist[index] = true;
 }
 
-bool get_map(struct Map *mp, int key, int *value) {
+// sets the value in pointer to it if exists and return true
+// otherwose returns false
+bool get_map(struct Map *mp, int key, int *value){
     size_t index = probe_map(mp, key);
-    if (mp->exists[index]) {
+    if(mp->exist[index]){
         *value = mp->values[index];
         return true;
     }
     return false;
 }
 
-int *twoSum(int *nums, int numsSize, int target, int *returnSize) {
-    if (nums == NULL) {
-        *returnSize = 0;
+int *twoSum(int *nums, int numsSize, int target, int *returnSize){
+   struct Map mp;
+   int *res = malloc(2 * sizeof(int));
+   *returnSize = 0;
+   if(!res) {
         return NULL;
-    }
-    if (numsSize < 2) {
-        *returnSize = 0;
-        return NULL;
-    }
-    int *res = (int *)malloc(2 * sizeof(int));
-    if (res == NULL) {
-        fprintf(stderr, "malloc failed\n");
-        *returnSize = 0;
-        return NULL;
-    }
-    struct Map mp;
-    if (!init_map(&mp, 2 * (size_t)numsSize)) { // dict failed
-        fprintf(stderr, "could not initialize dictionary\n");
-        *returnSize = 0;
+   }
+   if (!init_map(&mp, 2 * numsSize)){
+        fprintf(stderr, "cannot initialize map\n");
         free(res);
         return NULL;
-    }
-    // start sweeping the numbers
-    for (int i = 0; i < numsSize; i++) {
+   }
+   for (int i = 0; i < numsSize; i++){
         int want = target - nums[i];
-        int second_index;
-        if (get_map(&mp, want, &second_index)) {
-            res[0] = second_index;
-            res[1] = i;
+        int pair;
+        if(get_map(&mp, want, &pair)){
+            res[0] = pair, res[1] = i;
             *returnSize = 2;
             free_map(&mp);
             return res;
         }
         set_map(&mp, nums[i], i);
-    }
-    *returnSize = 0;
-    free(res);
-    free_map(&mp);
-    return NULL;
+   }
+   free_map(&mp);
+   free(res);
+   return NULL;
+
 }
 
 int main(void) {
-
-    int returnsize;
-
-    int *nums = malloc(2 * sizeof(int));
-
-    nums[0] = 3;
-    nums[1] = 3;
-    int target = 6;
-    int *res = twoSum(nums, 2, target, &returnsize);
-    assert(returnsize == 2);
-    assert(res[0] == 0);
-    assert(res[1] == 1);
-    free(nums);
-    free(res);
-
-    nums = malloc(4 * sizeof(int));
-
-    nums[0] = 2;
-    nums[1] = 7;
-    nums[2] = 11;
-    nums[3] = 15;
-    target = 9;
-    res = twoSum(nums, 4, target, &returnsize);
-    assert(returnsize == 2);
-    assert(res[0] == 0);
-    assert(res[1] == 1);
-    free(nums);
-    free(res);
-
-    nums = malloc(3 * sizeof(int));
-
-    nums[0] = 3;
-    nums[1] = 2;
-    nums[2] = 4;
-    target = 6;
-    res = twoSum(nums, 3, target, &returnsize);
-    assert(returnsize == 2);
-    assert(res[0] == 1);
-    assert(res[1] == 2);
-    free(nums);
-    free(res);
-
-    nums = malloc(4 * sizeof(int));
-
-    nums[0] = -3;
-    nums[1] = 4;
-    nums[2] = 3;
-    nums[3] = 90;
-    target = 0;
-    res = twoSum(nums, 4, target, &returnsize);
-    assert(returnsize == 2);
-    assert(res[0] == 0);
-    assert(res[1] == 2);
-    free(nums);
-    free(res);
-
-    res = twoSum((int[]){2, 7, 11, 15}, 4, 22, &returnsize);
-
-    assert(returnsize == 2);
-    assert(res[0] == 1);
-    assert(res[1] == 3);
-    free(res);
+    {
+        int nums[2] = {3, 3};
+        int returnSize;
+        int *res = twoSum(nums, 2, 6, &returnSize);
+        assert(res[0] == 0);
+        assert(res[1] == 1);
+        assert(returnSize == 2);
+        free(res);
+    }
+    {
+        int nums[4] = {2, 7, 11, 15};
+        int returnSize;
+        int *res = twoSum(nums, 4, 9, &returnSize);
+        assert(res[0] == 0);
+        assert(res[1] == 1);
+        assert(returnSize == 2);
+        free(res);
+    }
+    {
+        int nums[4] = {-3, 4, 3, 90};
+        int returnSize;
+        int *res = twoSum(nums, 4, 0, &returnSize);
+        assert(res[0] == 0);
+        assert(res[1] == 2);
+        assert(returnSize == 2);
+        free(res);
+    }
     return 0;
 }
