@@ -1,0 +1,6 @@
+# binaries built by the Makefile (no extension)
+*
+!*.c
+!*.h
+!Makefile
+!.gitignore

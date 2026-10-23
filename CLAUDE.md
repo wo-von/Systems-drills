@@ -63,6 +63,8 @@ after Write/Edit, and VS Code is configured to format C files on save — no nee
 manually after edits made through the editing tools.
 ## Amazon loop prep (until Mon 2 Nov 2026)
 
+- Build a problem: `cd Interview/leetcode && make <nn>-<name> && ./<nn>-<name>`
+  (Makefile there uses the standard -Wall -Wextra -Wpedantic + ASan/UBSan flags).
 - Timed problems live in `Interview/leetcode/<nn>-<name>.c`, one file and one commit
   per problem ("lc 1 two-sum: solved in 32 min" or "lc 1 two-sum: bell, rewritten from
   reference"). Cold re-solves are a new commit on the same file.
