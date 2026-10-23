@@ -4,67 +4,78 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char opening[] = "{[(";
-static const char closing[] = "}])";
+const char *opening = "({[";
+const char *closing = ")}]";
 
 struct Stack {
-    char s[10000]; // does not need to be larger than the input size
+    char buff[20000];
     size_t top;
 };
 
-// 1<= strlen(s) <= 10^4
-bool isValid(char *s) {
-    struct Stack stk = {0};
+bool stack_empty(struct Stack *st) {
+    return st->top == 0;
+}
 
-    for (char *p = s; *p; p++) {
-        size_t index;
-        if (strchr(opening, *p)) { // found an opening
-            index = strchr(opening, *p) - opening;
-            stk.s[stk.top] = *p;
+bool isValid(char *s) {
+    size_t str_len = strlen(s);
+    if (str_len % 2 == 1) {
+        return false;
+    }
+    struct Stack stk = {0};
+    for (size_t i = 0; i < str_len; i++) {
+        char *match = strchr(opening, s[i]);
+        if (match) { // is a opening
+            stk.buff[stk.top] = s[i];
             stk.top++;
-        } else { // a closing
-            index = strchr(closing, *p) - closing;
-            if (stk.top == 0) // nothing to close
+        } else {
+            match = strchr(closing, s[i]);
+            int index = match - closing;
+            if (!stk.top) { // we have a closing and stack is empty
                 return false;
-            if (stk.s[stk.top - 1] != opening[index]) {
+            }
+            if (stk.buff[stk.top - 1] != opening[index]) {
                 return false;
             }
             stk.top--;
         }
     }
-    if (stk.top != 0)
+    if (stk.top != 0) {
         return false;
-    return true;
+    } else {
+        return true;
+    }
 }
 
 int main(void) {
-    char *test = "()";
-    bool res = isValid(test);
-    assert(res == true);
-
-    test = "()[]{}";
-    res = isValid(test);
-    assert(res == true);
-
-    test = "(]";
-    res = isValid(test);
-    assert(res == false);
-
-    test = "([])";
-    res = isValid(test);
-    assert(res == true);
-
-    test = "([)]";
-    res = isValid(test);
-    assert(res == false);
-
-    test = ")";
-    res = isValid(test);
-    assert(res == false);
-
-    test = "())";
-    res = isValid(test);
-    assert(res == false);
-
+    {
+        char *test = "(){}[]";
+        bool res = isValid(test);
+        assert(res == true);
+    }
+    {
+        char *test = "(]";
+        bool res = isValid(test);
+        assert(res == false);
+    }
+    {
+        char *test = "([)]";
+        bool res = isValid(test);
+        assert(res == false);
+    }
+    {
+        char *test = "{[]}";
+        bool res = isValid(test);
+        assert(res == true);
+    }
+    {
+        {
+            char *test = "))";
+            bool res = isValid(test);
+            assert(res == false);
+        }
+        char *test = "((";
+        bool res = isValid(test);
+        assert(res == false);
+    }
     return 0;
 }
