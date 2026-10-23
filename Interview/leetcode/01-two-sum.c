@@ -1,10 +1,10 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdbool.h>
-#include<string.h>
-#include<assert.h>
+#include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-struct Map{
+struct Map {
     int *keys;
     int *values;
     int cap;
@@ -12,14 +12,14 @@ struct Map{
     size_t mask;
 };
 
-size_t hash_map(struct Map *mp, int index){
+size_t hash_map(struct Map *mp, int index) {
     unsigned long hash = (unsigned long)index;
     hash *= 0x9E3779B1u;
     hash ^= hash >> 16;
     return (size_t)hash & mp->mask;
 }
 
-void free_map(struct Map *mp){
+void free_map(struct Map *mp) {
     free(mp->keys);
     mp->keys = NULL;
     free(mp->values);
@@ -30,9 +30,9 @@ void free_map(struct Map *mp){
     mp->mask = 0;
 }
 
-bool init_map(struct Map *mp, int cap){
+bool init_map(struct Map *mp, int cap) {
     int c = 1;
-    while (c < cap){
+    while (c < cap) {
         c <<= 1;
     }
     mp->cap = c;
@@ -40,23 +40,22 @@ bool init_map(struct Map *mp, int cap){
     mp->keys = malloc(mp->cap * sizeof(int));
     mp->values = malloc(mp->cap * sizeof(int));
     mp->exist = calloc(mp->cap, sizeof(bool));
-    if(!mp->keys || !mp->values || !mp->exist){
+    if (!mp->keys || !mp->values || !mp->exist) {
         free_map(mp);
         return false;
     }
     return true;
-
 }
 
-size_t probe_map(struct Map *mp, int key){
+size_t probe_map(struct Map *mp, int key) {
     size_t index = hash_map(mp, key);
-    while (mp->exist[index] && mp->keys[index] != key){
+    while (mp->exist[index] && mp->keys[index] != key) {
         index = (index + 1) & mp->mask;
     }
     return index;
 }
 
-void set_map(struct Map *mp, int key, int value){
+void set_map(struct Map *mp, int key, int value) {
     size_t index = probe_map(mp, key);
     mp->keys[index] = key;
     mp->values[index] = value;
@@ -65,42 +64,41 @@ void set_map(struct Map *mp, int key, int value){
 
 // sets the value in pointer to it if exists and return true
 // otherwose returns false
-bool get_map(struct Map *mp, int key, int *value){
+bool get_map(struct Map *mp, int key, int *value) {
     size_t index = probe_map(mp, key);
-    if(mp->exist[index]){
+    if (mp->exist[index]) {
         *value = mp->values[index];
         return true;
     }
     return false;
 }
 
-int *twoSum(int *nums, int numsSize, int target, int *returnSize){
-   struct Map mp;
-   int *res = malloc(2 * sizeof(int));
-   *returnSize = 0;
-   if(!res) {
+int *twoSum(int *nums, int numsSize, int target, int *returnSize) {
+    struct Map mp;
+    int *res = malloc(2 * sizeof(int));
+    *returnSize = 0;
+    if (!res) {
         return NULL;
-   }
-   if (!init_map(&mp, 2 * numsSize)){
+    }
+    if (!init_map(&mp, 2 * numsSize)) {
         fprintf(stderr, "cannot initialize map\n");
         free(res);
         return NULL;
-   }
-   for (int i = 0; i < numsSize; i++){
+    }
+    for (int i = 0; i < numsSize; i++) {
         int want = target - nums[i];
         int pair;
-        if(get_map(&mp, want, &pair)){
+        if (get_map(&mp, want, &pair)) {
             res[0] = pair, res[1] = i;
             *returnSize = 2;
             free_map(&mp);
             return res;
         }
         set_map(&mp, nums[i], i);
-   }
-   free_map(&mp);
-   free(res);
-   return NULL;
-
+    }
+    free_map(&mp);
+    free(res);
+    return NULL;
 }
 
 int main(void) {
