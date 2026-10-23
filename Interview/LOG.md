@@ -20,3 +20,4 @@ date | problem | minutes | compile errors | logic bugs | found by me | categorie
 2026-10-22 | lc 1 two-sum | bell; rewrite ~150 | 6 | 13 | 0 | hash map (open addressing), arrays
 2026-10-22 | lc 20 valid-parentheses | 44 | 2 | 3 | 0 | stack, strings
 2026-10-23 | lc 200 number-of-islands | bell; fixed by 113 | 14 | 5 | 0 | BFS, grid graph, queue
+2026-10-23 | lc 994 rotting-oranges | bell; fixed by 77 | 4 | 4 | 1 | multi-source BFS, grid graph, two queues
