@@ -102,6 +102,13 @@ int main(void){
         int res = numIslands(g, 4, cols);
         assert(res == 10);
     }
+    {
+        char r0[] = "00000", r1[] = "00000", r2[] = "00000", r3[] = "00000";
+        char *g[] = {r0, r1, r2, r3};
+        int cols[] = {5, 5, 5, 5};
+        int res = numIslands(g, 4, cols);
+        assert(res == 0);
+    }
     return 0;
 }
 
