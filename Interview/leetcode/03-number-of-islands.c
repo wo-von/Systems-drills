@@ -1,113 +1,122 @@
 #include <assert.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// must be looped with same indices
 const int dir_x[4] = {-1, 0, 1, 0};
 const int dir_y[4] = {0, 1, 0, -1};
 
 struct Queue {
-    int buffer[90000][2]; // should be larger than the grid
-    size_t tail, head;
+    int *x;
+    int *y;
+    int head, tail;
 };
 
-void queue_push(struct Queue *q, int to_push_x, int to_push_y) {
-    q->buffer[q->head][0] = to_push_x;
-    q->buffer[q->head][1] = to_push_y;
-    q->head++;
-    return;
-}
-
-int *queue_read(struct Queue *q) {
-    q->tail++;
-    return q->buffer[q->tail - 1];
-}
-
-bool queue_empty(struct Queue *q) {
-    return q->head == q->tail;
+void queue_add(struct Queue *q, int x, int y) {
+    q->x[q->head] = x;
+    q->y[q->head] = y;
+    (q->head)++;
 }
 
 int numIslands(char **grid, int gridSize, int *gridColSize) {
-    int num_islands = 0;
-    if (grid == NULL) {
-        return num_islands;
+    int island_count = 0;
+    struct Queue qu;
+    qu.x = malloc((size_t)gridSize * gridColSize[0] * sizeof(*qu.x));
+    qu.y = malloc((size_t)gridSize * gridColSize[0] * sizeof(*qu.y));
+    if (!qu.x || !qu.y) {
+        fprintf(stderr, "malloc failed\n");
+        free(qu.x);
+        free(qu.y);
+        return -1;
     }
-    struct Queue queue = {0};
+    qu.head = qu.tail = 0;
     for (int i = 0; i < gridSize; i++) {
         for (int j = 0; j < gridColSize[0]; j++) {
-            char cell = grid[i][j];
-            if (cell == '0') {
+            if (grid[i][j] == '0') {
                 continue;
             }
-            queue_push(&queue, i, j);
-            num_islands++;
             grid[i][j] = '0';
-            while (!queue_empty(&queue)) {
-                int *next_arr = queue_read(&queue);
-                int next_x = next_arr[0], next_y = next_arr[1];
+            island_count++;
+            queue_add(&qu, i, j);
+            while (qu.tail != qu.head) {
+                int this_x = qu.x[qu.tail];
+                int this_y = qu.y[qu.tail];
+                qu.tail++;
                 for (int k = 0; k < 4; k++) {
-                    int this_x = next_x + dir_x[k];
-                    int this_y = next_y + dir_y[k];
-                    if (this_x < 0 || this_y < 0 || this_x >= gridSize ||
-                        this_y >= gridColSize[0]) {
+                    int next_x = this_x + dir_x[k];
+                    int next_y = this_y + dir_y[k];
+                    if (next_x < 0 || next_x >= gridSize || next_y < 0 ||
+                        next_y >= gridColSize[0]) {
                         continue;
                     }
-                    if (grid[this_x][this_y] == '0') {
-                        continue;
+                    if (grid[next_x][next_y] == '1') {
+                        grid[next_x][next_y] = '0';
+                        queue_add(&qu, next_x, next_y);
                     }
-                    grid[this_x][this_y] = '0';
-                    queue_push(&queue, this_x, this_y);
                 }
             }
         }
     }
-    return num_islands;
+    free(qu.x);
+    free(qu.y);
+    return island_count;
 }
 
 int main(void) {
     {
-        char r0[] = "11000", r1[] = "11000", r2[] = "00100", r3[] = "00011";
-        char *g[] = {r0, r1, r2, r3};
-        int cols[] = {5, 5, 5, 5};
-        int res = numIslands(g, 4, cols);
-        assert(res == 3);
+        char r0[] = "1100";
+        char r1[] = "1100";
+        char r2[] = "0010";
+        char r3[] = "0010";
+        char *grid[] = {r0, r1, r2, r3};
+        int gridSize = 4;
+        int gridSizeCol[] = {4, 4, 4, 4};
+        int num = numIslands(grid, gridSize, gridSizeCol);
+        assert(num == 2);
     }
     {
-        char r0[] = "11111", r1[] = "11111", r2[] = "11111", r3[] = "11111";
-        char *g[] = {r0, r1, r2, r3};
-        int cols[] = {5, 5, 5, 5};
-        int res = numIslands(g, 4, cols);
-        assert(res == 1);
+        char r0[] = "10101";
+        char r1[] = "01010";
+        char r2[] = "10101";
+        char r3[] = "01010";
+        char *grid[] = {r0, r1, r2, r3};
+        int gridSize = 4;
+        int gridSizeCol[] = {5, 5, 5, 5};
+        int num = numIslands(grid, gridSize, gridSizeCol);
+        assert(num == 10);
     }
     {
-        char r0[] = "10000", r1[] = "00000", r2[] = "00000", r3[] = "00000";
-        char *g[] = {r0, r1, r2, r3};
-        int cols[] = {5, 5, 5, 5};
-        int res = numIslands(g, 4, cols);
-        assert(res == 1);
+        char r0[] = "1111";
+        char r1[] = "1111";
+        char r2[] = "1111";
+        char r3[] = "1111";
+        char *grid[] = {r0, r1, r2, r3};
+        int gridSize = 4;
+        int gridSizeCol[] = {4, 4, 4, 4};
+        int num = numIslands(grid, gridSize, gridSizeCol);
+        assert(num == 1);
     }
     {
-        char r0[] = "10101", r1[] = "10101", r2[] = "10101", r3[] = "10101";
-        char *g[] = {r0, r1, r2, r3};
-        int cols[] = {5, 5, 5, 5};
-        int res = numIslands(g, 4, cols);
-        assert(res == 3);
+        char r0[] = "1100";
+        char r1[] = "1100";
+        char r2[] = "0010";
+        char r3[] = "0010";
+        char *grid[] = {r0, r1, r2, r3};
+        int gridSize = 4;
+        int gridSizeCol[] = {4, 4, 4, 4};
+        int num = numIslands(grid, gridSize, gridSizeCol);
+        assert(num == 2);
     }
     {
-        char r0[] = "10101", r1[] = "01010", r2[] = "10101", r3[] = "01010";
-        char *g[] = {r0, r1, r2, r3};
-        int cols[] = {5, 5, 5, 5};
-        int res = numIslands(g, 4, cols);
-        assert(res == 10);
-    }
-    {
-        char r0[] = "00000", r1[] = "00000", r2[] = "00000", r3[] = "00000";
-        char *g[] = {r0, r1, r2, r3};
-        int cols[] = {5, 5, 5, 5};
-        int res = numIslands(g, 4, cols);
-        assert(res == 0);
+        char r0[] = "1";
+        char r1[] = "1";
+        char r2[] = "1";
+        char r3[] = "1";
+        char *grid[] = {r0, r1, r2, r3};
+        int gridSize = 4;
+        int gridSizeCol[] = {1, 1, 1, 1};
+        int num = numIslands(grid, gridSize, gridSizeCol);
+        assert(num == 1);
     }
     return 0;
 }
