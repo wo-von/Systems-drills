@@ -63,56 +63,98 @@ void bq_put(struct bq *q, int v) {
     pthread_cond_signal(&q->cond_not_empty);
     pthread_mutex_unlock(&q->mutex);
 }
+
 int bq_get(struct bq *q) {
     pthread_mutex_lock(&q->mutex);
-    while (bq->count == 0) { // buffer empty
+    while (q->count == 0) { // buffer empty
         pthread_cond_wait(&q->cond_not_empty, &q->mutex);
     }
     int val = q->buf[q->tail];
     q->tail = (q->tail + 1) % q->cap;
     q->count--;
-    pthread_cont_signal(&q->cond_not_full);
-    pthread_mutex_unlock(q->&mutex);
+    pthread_cond_signal(&q->cond_not_full);
+    pthread_mutex_unlock(&q->mutex);
     return val;
 }
-void write(void *args) {
-    struct bq *q = (struct bq *)args;
+
+struct worker {
+    struct bq *q;
+    int id;    // id of the producer
+    int *seen; // where to record what it has gotten.
+    size_t n;  // how many items to put or get
+};
+
+void *producer(void *args) {
+    struct worker *arg = (struct worker *)args;
+    for (size_t i = 0; i < arg->n; i++) {
+        bq_put(arg->q, arg->id * arg->n + i);
+    }
+    return NULL;
 }
 
-void read(void *args){
-    struct bq *q = (struct bq *)args;
+void *consumer(void *args) {
+    struct worker *arg = (struct worker *)args;
+    for (size_t i = 0; i < arg->n; i++) {
+        arg->seen[bq_get(arg->q)] += 1;
+    }
+    return NULL;
 }
 int main(void) {
+    size_t N = 100000; // How many the producers produce
     struct bq q;
-    if (!bq_init(&q, 3)) {
+    if (!bq_init(&q, 4)) {
         fprintf(stderr, "cannot create the buffer\n");
-        return 1;
+        exit(1);
     }
     pthread_t writers[3];
     pthread_t readers[3];
-    for (int i = 0; i < 3; i++){
-        int ret = pthread_create(&writers[i], NULL, write, &bq);
+    int *seen = calloc(3 * N, sizeof(int)); // each writer writes 3 times
+    struct worker writer_args[3];
+    struct worker reader_args[3];
+    for (int i = 0; i < 3; i++) {
+        writer_args[i].q = &q;
+        writer_args[i].id = i;
+        writer_args[i].seen = seen;
+        writer_args[i].n = N;
+        int ret = pthread_create(&writers[i], NULL, producer, &writer_args[i]);
         if (ret != 0) {
-            for (int j = 0; j < i; j++){
-                pthread_cancel(writers[j]);
-            }
             bq_destroy(&q);
             fprintf(stderr, "creation of thread failed\n");
-            return 1;
+            free(seen);
+            exit(1);
         }
     }
-    for (int i = 0; i < 3; i++){
-        int ret = pthread_create(&readers[i], NULL, read, &bq);
+    for (int i = 0; i < 3; i++) {
+        reader_args[i].q = &q;
+        reader_args[i].id = i;
+        reader_args[i].seen = seen;
+        reader_args[i].n = N;
+        int ret = pthread_create(&readers[i], NULL, consumer, &reader_args[i]);
         if (ret != 0) {
-            for (int j = 0; j < 3; j++){
-                pthread_cancel(writers[j]);
-            }
-            for (int j = 0; j < i; j++){
-                pthread_cancel(readers[j]);
-            }
             bq_destroy(&q);
             fprintf(stderr, "creation of thread failed\n");
-            return 1;
+            free(seen);
+            exit(1);
         }
     }
+    for (int i = 0; i < 3; i++) {
+        if (pthread_join(writers[i], NULL) != 0) {
+            free(seen);
+            bq_destroy(&q);
+            exit(1);
+        }
+    }
+    for (int i = 0; i < 3; i++) {
+        if (pthread_join(readers[i], NULL) != 0) {
+            free(seen);
+            bq_destroy(&q);
+            exit(1);
+        }
+    }
+    for (size_t i = 0; i < 3 * N; i++) {
+        assert(seen[i] == 1);
+    }
+    free(seen);
+    bq_destroy(&q);
+    return 0;
 }
