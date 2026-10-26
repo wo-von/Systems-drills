@@ -25,3 +25,4 @@ date | problem | minutes | compile errors | logic bugs | found by me | categorie
 2026-10-23 | lc 20 valid-parentheses (cold) | 23 | 0 | 1 | 0 | stack, strings
 2026-10-24 | lc 200 number-of-islands (cold) | bell; fixed by 65 | 0 | 5 | 0 | BFS, grid graph, queue
 2026-10-24 | lc 994 rotting-oranges (cold) | bell; fixed by 60 | 0 | 3 | 0 | multi-source BFS, grid graph, two queues
+2026-10-26 | lc 206 reverse-linked-list | bell; fixed by 56 | 5 | 2 | 1 | linked list, pointer rewiring
