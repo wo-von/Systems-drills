@@ -26,22 +26,20 @@ struct ListNode *mergeTwoLists(struct ListNode *list1, struct ListNode *list2){
 }
 
 struct ListNode *build_array(int nums[], size_t length) {
-    struct ListNode *addr[length + 1];
-    for (size_t i = 0; i < length; i++) {
-        struct ListNode *node = malloc(sizeof(struct ListNode));
-        if (node == NULL) {
+    struct ListNode dummy;
+    struct ListNode *tail = &dummy;
+    size_t index = 0;
+    while (index < length){
+        tail->next = malloc(sizeof(struct ListNode));
+        if (tail->next == NULL){
             fprintf(stderr, "malloc failed\n");
             exit(1);
         }
-        addr[i] = node;
+        tail = tail->next;
+        tail->next = NULL;
+        tail->val = nums[index++];
     }
-    addr[length] = NULL;
-    for (size_t i = 0; i < length; i++) {
-        addr[i]->val = nums[i];
-        addr[i]->next = addr[i + 1];
-    }
-    struct ListNode *head = addr[0];
-    return head;
+    return dummy.next;
 }
 
 void destroy_list(struct ListNode *head) {
@@ -55,9 +53,10 @@ void destroy_list(struct ListNode *head) {
 }
 
 int main(void) {
+    // test case 1
     {
         int arr[] = {1, 3, 5};
-        int arr2[] = {2,  4, 6};
+        int arr2[] = {2, 4, 6};
         size_t array_size1 = sizeof arr / sizeof arr[0];
         size_t array_size2 = sizeof arr2 / sizeof arr[0];
         struct ListNode *list1 = build_array(arr, array_size1);
@@ -74,6 +73,7 @@ int main(void) {
         // lists have been spliced, so one free is enough
         destroy_list(newhead);
     }
+    // test case 2
     {
         int arr2[] = {1, 2, 3};
         size_t array_size2 = sizeof arr2 / sizeof arr2[0];
