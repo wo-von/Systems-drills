@@ -27,3 +27,4 @@ date | problem | minutes | compile errors | logic bugs | found by me | categorie
 2026-10-24 | lc 994 rotting-oranges (cold) | bell; fixed by 60 | 0 | 3 | 0 | multi-source BFS, grid graph, two queues
 2026-10-26 | lc 206 reverse-linked-list | bell; fixed by 56 | 5 | 2 | 1 | linked list, pointer rewiring
 2026-10-27 | lc 21 merge-two-sorted-lists | 40 | 2 | 2 | 0 | linked list, dummy node, two pointers
+2026-10-27 | lc 206 reverse-linked-list (cold) | 11 | 0 | 0 | 0 | linked list, pointer rewiring
