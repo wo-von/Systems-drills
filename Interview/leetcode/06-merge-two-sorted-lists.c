@@ -1,17 +1,17 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 struct ListNode {
-	int val;
-	struct ListNode *next;
+    int val;
+    struct ListNode *next;
 };
 
-struct ListNode *mergeTwoLists(struct ListNode *list1, struct ListNode *list2){
+struct ListNode *mergeTwoLists(struct ListNode *list1, struct ListNode *list2) {
     struct ListNode dummy;
     struct ListNode *tail = &dummy;
-    while (list1 != NULL && list2 != NULL){
-        if (list1->val < list2->val){
+    while (list1 != NULL && list2 != NULL) {
+        if (list1->val < list2->val) {
             tail->next = list1;
             list1 = list1->next;
         } else {
@@ -29,9 +29,9 @@ struct ListNode *build_array(int nums[], size_t length) {
     struct ListNode dummy;
     struct ListNode *tail = &dummy;
     size_t index = 0;
-    while (index < length){
+    while (index < length) {
         tail->next = malloc(sizeof(struct ListNode));
-        if (tail->next == NULL){
+        if (tail->next == NULL) {
             fprintf(stderr, "malloc failed\n");
             exit(1);
         }
