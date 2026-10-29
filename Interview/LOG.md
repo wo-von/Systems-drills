@@ -29,3 +29,4 @@ date | problem | minutes | compile errors | logic bugs | found by me | categorie
 2026-10-27 | lc 21 merge-two-sorted-lists | 40 | 2 | 2 | 0 | linked list, dummy node, two pointers
 2026-10-27 | lc 206 reverse-linked-list (cold) | 11 | 0 | 0 | 0 | linked list, pointer rewiring
 2026-10-28 | lc 56 merge-intervals (C++) | bell; fixed by 55 | 2 | 4 | 1 | sorting, interval sweep, greedy
+2026-10-29 | parking lot (OOD, C) | bell; rewritten from reference | 9 | 6 | 0 | object design, flat 2-D array, API/ownership
