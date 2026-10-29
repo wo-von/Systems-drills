@@ -8,7 +8,7 @@ char *starting = "({[";
 char *ending = ")}]";
 
 struct stack {
-    char s[1000];
+    char s[10001];
     size_t head;
     size_t tail;
 };
@@ -58,6 +58,12 @@ int main(void) {
     }
     {
         char test[] = "((";
+        assert(check_paren(test) == false);
+    }
+    {
+        char test[1002];
+        memset(test, '(', 1001);
+        test[1001] = '\0';
         assert(check_paren(test) == false);
     }
     return 0;
