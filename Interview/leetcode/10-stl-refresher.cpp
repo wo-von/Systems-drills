@@ -54,8 +54,8 @@ std::vector<std::string> top_k(const std::unordered_map<std::string, int> &count
 }
 
 int main() {
-    const std::vector<std::string> words = {"vm",  "kvm", "vm",   "exit", "kvm",
-                                            "vm",  "ept", "exit", "kvm",  "mmio"};
+    const std::vector<std::string> words = {"vm", "kvm", "vm",   "exit", "kvm",
+                                            "vm", "ept", "exit", "kvm",  "mmio"};
 
     auto counts = count_words(words);
     assert(counts.size() == 5);
