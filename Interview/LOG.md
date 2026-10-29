@@ -33,3 +33,4 @@ date | problem | minutes | compile errors | logic bugs | found by me | categorie
 2026-10-29 | memcpy + memmove | bell; fixed with help, final fix from reference | 2 | 7 | 0 | raw memory, overlap direction, unsigned loop bounds
 2026-10-29 | lc 146 lru-cache (C++) | bell; fixed after review | 3 | 1 | 0 | hash map + doubly linked list, std::list splice
 2026-10-29 | lc 20 valid-parentheses (cold 2) | 24 (10-min box) | 0 | 1 | 0 | stack, strings; stack sized 1000 < 10^4 input
+2026-10-29 | lc 200 number-of-islands (cold 2) | 28 (12-min box); queue fixed with help by 32 | 0 | 1 | 0 | BFS, grid graph, queue; malloc bytes vs elements + capacity rows*cols
