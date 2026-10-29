@@ -31,3 +31,4 @@ date | problem | minutes | compile errors | logic bugs | found by me | categorie
 2026-10-28 | lc 56 merge-intervals (C++) | bell; fixed by 55 | 2 | 4 | 1 | sorting, interval sweep, greedy
 2026-10-29 | parking lot (OOD, C) | bell; rewritten from reference | 9 | 6 | 0 | object design, flat 2-D array, API/ownership
 2026-10-29 | memcpy + memmove | bell; fixed with help, final fix from reference | 2 | 7 | 0 | raw memory, overlap direction, unsigned loop bounds
+2026-10-29 | lc 146 lru-cache (C++) | bell; fixed after review | 3 | 1 | 0 | hash map + doubly linked list, std::list splice
