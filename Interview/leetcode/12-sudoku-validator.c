@@ -167,56 +167,56 @@ int main(void) {
         assert(res == true);
     }
     {
-    // clang-format off
+        // clang-format off
         int board[16] = {
             0, 3, 2, 4, 
             2, 0, 1, 3, 
             3, 0, 4, 2, 
             0, 2, 3, 1,
         };
-    // clang-format on
+        // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == true);
         res = sudoku_valid(board, 4, 2);
         assert(res == true);
     }
     {
-    // clang-format off
+        // clang-format off
         int board[16] = {
             1, 0, 1, 4,
             2, 0, 0, 3,
             3, 0, 4, 2,
             4, 2, 3, 1,
         };
-    // clang-format on
+        // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == false);
         res = sudoku_valid(board, 4, 2);
         assert(res == false);
     }
     {
-    // clang-format off
+        // clang-format off
         int board[16] = {
             1, 0, 2, 4,
             3, 4, 0, 0,
             1, 0, 4, 2,
             4, 2, 3, 1,
         };
-    // clang-format on
+        // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == false);
         res = sudoku_valid(board, 4, 2);
         assert(res == false);
     }
     {
-    // clang-format off
+        // clang-format off
         int board[16] = {
             1, 3, 2, 4,
             2, 4, 0, 3,
             3, 0, 1, 2,
             4, 2, 3, 1,
         };
-    // clang-format on
+        // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == false);
         res = sudoku_valid(board, 4, 2);
@@ -230,28 +230,28 @@ int main(void) {
         assert(res == false);
     }
     {
-    // clang-format off
+        // clang-format off
         int board[16] = {
             1, 3, 2, 4, 
             2, 0, 1, 3, 
             3, 0, 4, 2, 
             0, 2, 3, 1,
         };
-    // clang-format on
+        // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == true);
         res = sudoku_valid(board, 4, 2);
         assert(res == false);
     }
     {
-    // clang-format off
+        // clang-format off
         int board[16] = {
             0, 3, 2, 4, 
             2, 0, 1, 3, 
             3, 0, 4, 2, 
             4, 2, 3, 1,
         };
-    // clang-format on
+        // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == true);
         res = sudoku_valid(board, 4, 2);
