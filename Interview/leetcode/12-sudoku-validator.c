@@ -68,13 +68,13 @@ bool sudoku_valid_v0(const int *board, int n, int box) {
     return true;
 }
 
-bool unit_ok(const int *vals, int n){
+bool unit_ok(const int *vals, int n) {
     int seen[MAX_N + 1] = {0};
-    for (int i = 0; i < n; i++){
-        if (vals[i] == 0){
+    for (int i = 0; i < n; i++) {
+        if (vals[i] == 0) {
             continue;
         }
-        if (vals[i] < 0 || vals[i] > n){
+        if (vals[i] < 0 || vals[i] > n) {
             return false;
         }
         if (seen[vals[i]] == 1) {
@@ -87,31 +87,34 @@ bool unit_ok(const int *vals, int n){
 
 typedef void (*gatherer)(const int *board, int n, int b, int u, int *out);
 
-typedef struct {gatherer g; int n;} gather_kind;
+typedef struct {
+    gatherer g;
+    int n;
+} gather_kind;
 
-void row_gatherer(const int *board, int n, int b, int u, int *out){
+void row_gatherer(const int *board, int n, int b, int u, int *out) {
     (void)b;
-    for (int i = 0; i < n; i++){
+    for (int i = 0; i < n; i++) {
         out[i] = board[u * n + i];
     }
 }
 
-void col_gatherer(const int *board, int n, int b, int u, int *out){
+void col_gatherer(const int *board, int n, int b, int u, int *out) {
     (void)b;
-    for (int i = 0; i < n; i++){
+    for (int i = 0; i < n; i++) {
         out[i] = board[i * n + u];
     }
 }
 
-void sqr_gatherer(const int *board, int n, int b, int u, int *out){
+void sqr_gatherer(const int *board, int n, int b, int u, int *out) {
     int r0 = u / b * b, c0 = (u % b) * b; // upper left corner of each sqaure
-    for (int i = 0; i < n; i++){
+    for (int i = 0; i < n; i++) {
         int index = (r0 + i / b) * n + c0 + i % b;
         out[i] = board[index];
     }
 }
 
-bool sudoku_valid(const int *board, int n, int box){
+bool sudoku_valid(const int *board, int n, int box) {
     if (n < 0 || n > MAX_N || box <= 0 || box > n || box * box != n) {
         return false;
     }
@@ -121,10 +124,10 @@ bool sudoku_valid(const int *board, int n, int box){
         {sqr_gatherer, n},
     };
     int vals[MAX_N];
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < kinds[i].n; j++){
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < kinds[i].n; j++) {
             kinds[i].g(board, n, box, j, vals);
-            if (!unit_ok(vals, n)){
+            if (!unit_ok(vals, n)) {
                 return false;
             }
         }
