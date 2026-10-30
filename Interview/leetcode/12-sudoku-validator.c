@@ -114,6 +114,26 @@ void sqr_gatherer(const int *board, int n, int b, int u, int *out) {
     }
 }
 
+void diag_gatherer(const int *board, int n, int b, int u, int *out) {
+    (void)b;
+    assert(u == 0 || u == 1);
+    switch (u) {
+    case 0:
+        for (int i = 0; i < n; i++) {
+            out[i] = board[i * n + i];
+        }
+        break;
+    case 1:
+        for (int i = 0; i < n; i++) {
+            out[i] = board[i * n + n - 1 - i];
+        }
+        break;
+    default:
+        break;
+    }
+    return;
+}
+
 bool sudoku_valid(const int *board, int n, int box) {
     if (n < 0 || n > MAX_N || box <= 0 || box > n || box * box != n) {
         return false;
@@ -122,9 +142,10 @@ bool sudoku_valid(const int *board, int n, int box) {
         {row_gatherer, n},
         {col_gatherer, n},
         {sqr_gatherer, n},
+        {diag_gatherer, 2},
     };
     int vals[MAX_N];
-    for (int i = 0; i < 3; i++) {
+    for (size_t i = 0; i < (sizeof kinds / sizeof kinds[0]); i++) {
         for (int j = 0; j < kinds[i].n; j++) {
             kinds[i].g(board, n, box, j, vals);
             if (!unit_ok(vals, n)) {
@@ -136,6 +157,7 @@ bool sudoku_valid(const int *board, int n, int box) {
 }
 
 int main(void) {
+    // Test boards are laid out one row per line.
     {
         int board[81] = {0};
         board[5] = 1;
@@ -145,36 +167,56 @@ int main(void) {
         assert(res == true);
     }
     {
+    // clang-format off
         int board[16] = {
-            1, 3, 2, 4, 2, 4, 1, 3, 3, 1, 4, 2, 4, 2, 3, 1,
+            0, 3, 2, 4, 
+            2, 0, 1, 3, 
+            3, 0, 4, 2, 
+            0, 2, 3, 1,
         };
+    // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == true);
         res = sudoku_valid(board, 4, 2);
         assert(res == true);
     }
     {
+    // clang-format off
         int board[16] = {
-            1, 0, 1, 4, 2, 0, 0, 3, 3, 0, 4, 2, 4, 2, 3, 1,
+            1, 0, 1, 4,
+            2, 0, 0, 3,
+            3, 0, 4, 2,
+            4, 2, 3, 1,
         };
+    // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == false);
         res = sudoku_valid(board, 4, 2);
         assert(res == false);
     }
     {
+    // clang-format off
         int board[16] = {
-            1, 0, 2, 4, 3, 4, 0, 0, 1, 0, 4, 2, 4, 2, 3, 1,
+            1, 0, 2, 4,
+            3, 4, 0, 0,
+            1, 0, 4, 2,
+            4, 2, 3, 1,
         };
+    // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == false);
         res = sudoku_valid(board, 4, 2);
         assert(res == false);
     }
     {
+    // clang-format off
         int board[16] = {
-            1, 3, 2, 4, 2, 4, 0, 3, 3, 0, 1, 2, 4, 2, 3, 1,
+            1, 3, 2, 4,
+            2, 4, 0, 3,
+            3, 0, 1, 2,
+            4, 2, 3, 1,
         };
+    // clang-format on
         bool res = sudoku_valid_v0(board, 4, 2);
         assert(res == false);
         res = sudoku_valid(board, 4, 2);
@@ -185,6 +227,34 @@ int main(void) {
         bool res = sudoku_valid_v0(board, 10, 4);
         assert(res == false);
         res = sudoku_valid(board, 10, 4);
+        assert(res == false);
+    }
+    {
+    // clang-format off
+        int board[16] = {
+            1, 3, 2, 4, 
+            2, 0, 1, 3, 
+            3, 0, 4, 2, 
+            0, 2, 3, 1,
+        };
+    // clang-format on
+        bool res = sudoku_valid_v0(board, 4, 2);
+        assert(res == true);
+        res = sudoku_valid(board, 4, 2);
+        assert(res == false);
+    }
+    {
+    // clang-format off
+        int board[16] = {
+            0, 3, 2, 4, 
+            2, 0, 1, 3, 
+            3, 0, 4, 2, 
+            4, 2, 3, 1,
+        };
+    // clang-format on
+        bool res = sudoku_valid_v0(board, 4, 2);
+        assert(res == true);
+        res = sudoku_valid(board, 4, 2);
         assert(res == false);
     }
     {
