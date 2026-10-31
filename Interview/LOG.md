@@ -35,3 +35,4 @@ date | problem | minutes | compile errors | logic bugs | found by me | categorie
 2026-10-29 | lc 20 valid-parentheses (cold 2) | 24 (10-min box) | 0 | 1 | 0 | stack, strings; stack sized 1000 < 10^4 input
 2026-10-29 | lc 200 number-of-islands (cold 2) | 28 (12-min box); queue fixed with help by 32 | 0 | 1 | 0 | BFS, grid graph, queue; malloc bytes vs elements + capacity rows*cols
 2026-10-30 | sudoku validator (C, rows/cols/boxes + gatherer refactor + diagonals) | ~160 total, brute force ~40 | 12 | 7 | 0 | arrays, flat 2-D indexing, box index math, function-pointer table, refactor along axis of change
+2026-10-31 | lc 1011 ship-packages (C) | ~70 (25-min box) | 1 | 10 | 0 | binary search on answer, greedy feasibility check
